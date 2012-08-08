@@ -2,6 +2,7 @@
 import networkx as nx,sys
 import math
 import copy
+
 def conv_to_numbers( minutiaes ) :
 	numbers = []
 	for m in minutiaes :
@@ -22,6 +23,9 @@ def calculate_angle( minutiaes1,minutiaes2 ) :
 	return angle
 def euclidean_distance( p1,p2 ) :
 	return math.sqrt( (p2[0]-p1[0])**2 + ( p2[1]-p1[1] )**2 )
+
+
+#iptable is in the form of [ distance,beta1,beta2,i,j ]
 
 def build_intra_table( minutiaes ) :
 	iptable = []
@@ -56,6 +60,16 @@ def use_entry( index_list,li ) : #return first Not-None value
 			return i
 
 
+def get_tokens( ) :
+	limit = 50
+
+	count = 1
+	while True :
+		yield 'm'+str( count )
+
+		if count > 50 :
+			break
+		count += 1
 
 def build_spanning_tree( ct ) :
 	'''Build a spanning tree using the edge information in the spanning tree
@@ -64,9 +78,38 @@ def build_spanning_tree( ct ) :
 	G1 = nx.Graph() #graph for the first minutiae set
 	G2 = nx.Graph() #graph for the first minutiae set
 
+	tokens = get_tokens()
+
+	dict1={}
+	dict2={}
+
 	for entry in ct :
+		#rename such that entry[0] and entry[2] gets the same label
+		print 'entry is : ', entry
+		if dict1.get( entry[0] ) :
+			#do nothing
+			pass
+		else :
+			dict1[ entry[0] ] = dict2[ entry[2] ] = next( tokens )
+		
+		if dict1.get( entry[1] ) :
+			#do nothing
+			pass
+		else :
+			dict1[ entry[1] ] = dict2[ entry[3] ]  = next( tokens )
+
+		print 'dict1 is : ', dict1
+		print 'dict2 is : ', dict2
+		print 'entry[2] is : ', entry[2]
+		print 'dict2[ entry[2] ] is  : ', dict2[ entry[2] ]
+		print 'dict2[ entry[3] ] is  : ', dict2[ entry[3] ]
+		G1.add_edge( dict1[ entry[0] ],dict1[ entry[1] ],weight=entry[4] )
+		G2.add_edge( dict2[ entry[2] ],dict2[ entry[3] ],weight=entry[4] )
+
+		"""
 		G1.add_edge( entry[0],entry[1],weight=entry[4] )
 		G2.add_edge( entry[2],entry[3],weight=entry[4] )
+		"""
 
 	#print 'G1.edges are : ', G1.edges()
 	#print 'G2.edges are : ', G2.edges()
@@ -75,7 +118,7 @@ def build_spanning_tree( ct ) :
 	min_span_g1 = nx.minimum_spanning_tree( G1 )
 	min_span_g2 = nx.minimum_spanning_tree( G2 )
 
-	return min_span_g1,min_span_g2
+	return dict1,dict2,min_span_g1,min_span_g2
 
 
 
@@ -236,9 +279,9 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	
 	index1 = {}
 	index2 = {}
-	threshold_dist = 6
-	threshold_beta1 = 10
-	threshold_beta2 = 10
+	threshold_dist = 4
+	threshold_beta1 = 5
+	threshold_beta2 = 5 
 	for i in range( len( iptable1 ) ) :
 		for j in range( len( iptable2 ) ) :
 			if abs( iptable1[ i ][ 0 ]-iptable2[j][0] ) <= threshold_dist and abs( iptable1[i][1] - iptable2[j][1] ) <= threshold_beta1 and abs( iptable1[i][2] - iptable2[j][2] ) <= threshold_beta2 :
@@ -273,8 +316,22 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 compatibility_table,index1,index2 = build_ct_and_indexes( iptable1,iptable2 )
 
 print 'compatibility_table is : ',compatibility_table
-Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( compatibility_table )
+dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( compatibility_table )
 
 
 print 'Spanning forest 1 is : ', Spanning_forest_1.edges()
 print 'Spanning forest 2 is : ', Spanning_forest_2.edges()
+
+print 'dict1 is : ', dict1
+print 'dict2 is : ', dict2
+
+
+print 'dict1 details '
+for key in dict1 :
+	print ( dict1[ key ], key  )
+
+
+
+print 'dict2 details '
+for key in dict2 :
+	print ( dict2[ key ], key  )
