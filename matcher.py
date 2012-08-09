@@ -197,7 +197,7 @@ minutiaes2 = [ a.split()[ : 3 ] for a in lines2 ]
 minutiaes2 = conv_to_numbers( minutiaes2 )
 ##print 'minutiaes are :',minutiaes
 
-minutiaes = sort_2d( minutiaes2 )
+minutiaes2 = sort_2d( minutiaes2 )
 
 #print 'sorted minutiaes from 2 are :',minutiaes2
 
@@ -388,8 +388,15 @@ for key in dict2 :
 #minutiaes1 in box
 print 'dict2.keys() is : ', dict2.keys()
 minutiaes2_in_box = [ minutiaes2[ item ] for item in dict2.keys() ]
+
+
+print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 print 'minutiaes2_in_box is : ', minutiaes2_in_box
 
+print '\n\n\n\n\n\n'
+print 'minutiaes2 is : ', minutiaes2
+
+print '\n\n\n\n\n\n'
 ( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box,minutiaes2 )
 boundaries = ( x_left,y_top,x_right,y_bottom )
 
