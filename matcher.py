@@ -330,6 +330,8 @@ def get_boundaries( minutiaes_in_box,minutiaes ) :
 	'''
 	returns ( leftmost co_ordinate, uppermost coordinate, rightmost coordinate , bottomost coordinate )
 	'''
+	print 'minutiaes are : ', minutiaes
+	print 'in get_boundaries() : ',minutiaes.index( min( minutiaes, key= lambda x : x[0] ) )
 
 	return ( minutiaes.index( min( minutiaes, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes, key=lambda x : x[1] ) ) )
 
@@ -340,20 +342,28 @@ print 'compatibility_table is : ',compatibility_table
 #Find the mapping from 1 to 2. 1 is the first argument
 
 def get_mapping( compatibility_table ) :
+	#mapping from 2nd to 1st is required here. small -> large
+	print 'in get_mapping()'
+	print compatibility_table
 	mapping = {}
 	for entry in compatibility_table :
-		if mapping.get( entry[0] ) :
+		if mapping.get( entry[2] ) :
+			if mapping[ entry[2] ] != entry[0] :
+				print 'gadbad hai bhai'
 			pass
 		else :
-			mapping[ entry[0] ]  = entry[2]
+			mapping[ entry[2] ]  = entry[0]
 
-		if mapping.get( entry[1] ) :
+		if mapping.get( entry[3] ) :
+			if mapping[ entry[3] ] != entry[1] :
+				print 'bahut gadbad hai bhai'
 			pass
 		else :
-			mapping[ entry[0] ] = entry[3]
+			mapping[ entry[3] ] = entry[1]
 	
 	return mapping
 mapping = get_mapping( compatibility_table )
+print 'mapping is : ', mapping
 dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( compatibility_table )
 
 
@@ -378,12 +388,29 @@ for key in dict2 :
 #minutiaes1 in box
 print 'dict2.keys() is : ', dict2.keys()
 minutiaes2_in_box = [ minutiaes2[ item ] for item in dict2.keys() ]
+print 'minutiaes2_in_box is : ', minutiaes2_in_box
 
 ( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box,minutiaes2 )
+boundaries = ( x_left,y_top,x_right,y_bottom )
 
 print  'The boundaries are :' ,( x_left, y_top, x_right, y_bottom )
 
-#Now make a boundary and search for the minutiaes inside from dict1
 
 
 print 'mapping is : ', mapping
+#Now make a boundary and search for the minutiaes inside from dict1
+def get_convex_hull( boundaries,mapping ) :
+	#the limits are 260x300 so 259x299
+	print 'Inside get_convex_hull ', boundaries
+
+	left_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] - minutiaes2[ boundaries[0] ][0]
+	top_y_of_hull = minutiaes1[ mapping[ boundaries[ 1 ] ] ] - minutiaes2[ boundaries[1] ][1]
+	right_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] + 259 - minutiaes2[ boundaries[0] ][0] #assuming 260 the base size
+	bottom_y_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] +  299 - minutiaes2[ boundaries[0] ][1]
+
+	return ( left_x_of_hull, top_y_of_hull, right_x_of_hull, bottom_y_of_hull )
+
+convex_points = get_convex_hull( boundaries,mapping )
+
+print 'convex_points is : ',convex_points
+	
