@@ -1,4 +1,17 @@
 #! /usr/bin/python
+
+
+
+'''
+	matcher.py
+
+	Author : Soumya Mandi
+	matcher.py we will follow this order .
+	this script is to be called using
+	$./matcher.py list1.txt list2.txt
+
+	list2.txt will be from smaller image
+'''
 import networkx as nx,sys
 import math
 import copy
@@ -313,9 +326,34 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	return compatibility_table,index1,index2
 
 
+def get_boundaries( minutiaes ) :
+	'''
+	returns ( leftmost co_ordinate, uppermost coordinate, rightmost coordinate , bottomost coordinate )
+	'''
+
+	return ( min( minutiaes, key= lambda x : x[0] )[0] , min( minutiaes, key = lambda x : x[1] )[1], max( minutiaes, key = lambda x : x[0] )[0], max( minutiaes, key=lambda x : x[1] )[1] )
+
 compatibility_table,index1,index2 = build_ct_and_indexes( iptable1,iptable2 )
 
 print 'compatibility_table is : ',compatibility_table
+
+#Find the mapping from 1 to 2. 1 is the first argument
+
+def get_mapping( compatibility_table ) :
+	mapping = {}
+	for entry in compatibility_table :
+		if mapping.get( entry[0] ) :
+			pass
+		else :
+			mapping[ entry[0] ]  = entry[2]
+
+		if mapping.get( entry[1] ) :
+			pass
+		else :
+			mapping[ entry[0] ] = entry[3]
+	
+	return mapping
+mapping = get_mapping( compatibility_table )
 dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( compatibility_table )
 
 
@@ -326,12 +364,26 @@ print 'dict1 is : ', dict1
 print 'dict2 is : ', dict2
 
 
-print 'dict1 details '
+print '\n\n\n\n\n\n\n\n\n\n\n\n\ndict1 details '
 for key in dict1 :
-	print ( dict1[ key ], key  )
+	print ( dict1[ key ], key,minutiaes1[ key ]  )
 
 
 
 print 'dict2 details '
 for key in dict2 :
-	print ( dict2[ key ], key  )
+	print ( dict2[ key ], key,minutiaes2[ key ]  )
+
+
+#minutiaes1 in box
+print 'dict2.keys() is : ', dict2.keys()
+minutiaes2_in_box = [ minutiaes2[ item ] for item in dict2.keys() ]
+
+( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box )
+
+print  'The boundaries are :' ,( x_left, y_top, x_right, y_bottom )
+
+#Now make a boundary and search for the minutiaes inside from dict1
+
+
+print 'mapping is : ', mapping
