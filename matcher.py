@@ -326,12 +326,12 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	return compatibility_table,index1,index2
 
 
-def get_boundaries( minutiaes ) :
+def get_boundaries( minutiaes_in_box,minutiaes ) :
 	'''
 	returns ( leftmost co_ordinate, uppermost coordinate, rightmost coordinate , bottomost coordinate )
 	'''
 
-	return ( min( minutiaes, key= lambda x : x[0] )[0] , min( minutiaes, key = lambda x : x[1] )[1], max( minutiaes, key = lambda x : x[0] )[0], max( minutiaes, key=lambda x : x[1] )[1] )
+	return ( minutiaes.index( min( minutiaes, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes, key=lambda x : x[1] ) ) )
 
 compatibility_table,index1,index2 = build_ct_and_indexes( iptable1,iptable2 )
 
@@ -379,7 +379,7 @@ for key in dict2 :
 print 'dict2.keys() is : ', dict2.keys()
 minutiaes2_in_box = [ minutiaes2[ item ] for item in dict2.keys() ]
 
-( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box )
+( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box,minutiaes2 )
 
 print  'The boundaries are :' ,( x_left, y_top, x_right, y_bottom )
 
