@@ -413,14 +413,51 @@ def get_convex_hull( boundaries,mapping ) :
 	#the limits are 260x300 so 259x299
 	print 'Inside get_convex_hull ', boundaries
 
-	left_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] - minutiaes2[ boundaries[0] ][0]
-	top_y_of_hull = minutiaes1[ mapping[ boundaries[ 1 ] ] ] - minutiaes2[ boundaries[1] ][1]
-	right_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] + 259 - minutiaes2[ boundaries[0] ][0] #assuming 260 the base size
-	bottom_y_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ] +  299 - minutiaes2[ boundaries[0] ][1]
+	if minutiaes1[ mapping[ boundaries[ 0 ] ] ][0] - minutiaes2[ boundaries[0] ][0] < 0 :
+		left_x_of_hull = 0	
+	else :
+		left_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ][0] - minutiaes2[ boundaries[0] ][0]
+	if minutiaes1[ mapping[ boundaries[ 1 ] ] ][1] - minutiaes2[ boundaries[1] ][1] < 0 :
+		top_y_of_hull  = 0
+	else :
+		top_y_of_hull =  minutiaes1[ mapping[ boundaries[ 1 ] ] ][1] - minutiaes2[ boundaries[1] ][1]
+		
+	if minutiaes1[ mapping[ boundaries[ 0 ] ] ][0] + 259 - minutiaes2[ boundaries[0] ][0] > 259 :#assuming 260 the base size
+		right_x_of_hull = 259 
+	else :
+		right_x_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ][0] + 259 - minutiaes2[ boundaries[0] ][0]
 
+	if minutiaes1[ mapping[ boundaries[ 0 ] ] ][1] +  299 - minutiaes2[ boundaries[0] ][1] > 299 :
+		bottom_y_of_hull = 299
+	else :
+		bottom_y_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ][1] +  299 - minutiaes2[ boundaries[0] ][1]
 	return ( left_x_of_hull, top_y_of_hull, right_x_of_hull, bottom_y_of_hull )
 
 convex_points = get_convex_hull( boundaries,mapping )
 
 print 'convex_points is : ',convex_points
 	
+def get_inside_the_boundary( points,minutiaes ) :
+	"""
+	Given a set of coordinates and minutiaes it gives the minutiaes which lies within the 
+	rectangle formed by the points.
+	"""
+
+	bounded_minutiaes = []
+
+	for entry in minutiaes :
+		if entry[0] >= points[0] and entry[1] >= points[1] and entry[0] <= points[2] and entry[1] <= points[3] :
+			bounded_minutiaes.append( entry )
+
+	
+	return bounded_minutiaes
+#Now count the minutiaes from minutiae1 which fall under the box
+minutiaes1_in_box = get_inside_the_boundary( convex_points,minutiaes2 )
+
+score = ( len(  mapping )**2*1.0 )/( len( minutiaes1_in_box )*len( minutiaes2 ) ) 
+
+print 'len(mapping) is : %d ',len( mapping )
+print 'len( minutiaes1_in_box is : %d ', len( minutiaes1_in_box )
+print 'len( minutiaes2 ) is : %d ', len( minutiaes2 )
+
+print 'score is : %s',( score, )
