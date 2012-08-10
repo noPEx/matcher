@@ -88,6 +88,7 @@ def build_spanning_tree( ct ) :
 	'''Build a spanning tree using the edge information in the spanning tree
 		ct is compatibility table
 	'''
+	print '\n\n\n#build_spanning_tree'
 	G1 = nx.Graph() #graph for the first minutiae set
 	G2 = nx.Graph() #graph for the first minutiae set
 
@@ -330,10 +331,10 @@ def get_boundaries( minutiaes_in_box,minutiaes ) :
 	'''
 	returns ( leftmost co_ordinate, uppermost coordinate, rightmost coordinate , bottomost coordinate )
 	'''
-	print 'minutiaes are : ', minutiaes
-	print 'in get_boundaries() : ',minutiaes.index( min( minutiaes, key= lambda x : x[0] ) )
+	#print 'minutiaes are : ', minutiaes
+	#print 'in get_boundaries() : ',minutiaes.index( min( minutiaes, key= lambda x : x[0] ) )
 
-	return ( minutiaes.index( min( minutiaes, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes, key=lambda x : x[1] ) ) )
+	return ( minutiaes.index( min( minutiaes_in_box, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes_in_box, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes_in_box, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes_in_box, key=lambda x : x[1] ) ) )
 
 compatibility_table,index1,index2 = build_ct_and_indexes( iptable1,iptable2 )
 
@@ -347,6 +348,8 @@ def get_mapping( compatibility_table ) :
 	print compatibility_table
 	mapping = {}
 	for entry in compatibility_table :
+		#print 'entry in compatibility_table',entry
+		#print 'keys are : ',( entry[2],entry[3] )
 		if mapping.get( entry[2] ) :
 			if mapping[ entry[2] ] != entry[0] :
 				print 'gadbad hai bhai'
@@ -386,8 +389,8 @@ for key in dict2 :
 
 
 #minutiaes1 in box
-print 'dict2.keys() is : ', dict2.keys()
-minutiaes2_in_box = [ minutiaes2[ item ] for item in dict2.keys() ]
+minutiaes2_in_box = [ minutiaes2[ item ] for item in mapping.keys() ]
+print 'mapping.keys() are : ', mapping.keys()
 
 
 print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
