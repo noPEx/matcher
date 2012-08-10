@@ -15,6 +15,9 @@
 import networkx as nx,sys
 import math
 import copy
+import logging
+
+logging.basicConfig( filename='info.log',filemode='w',level=logging.DEBUG,format='%(message)s' )
 
 def conv_to_numbers( minutiaes ) :
 	numbers = []
@@ -42,14 +45,16 @@ def euclidean_distance( p1,p2 ) :
 
 def build_intra_table( minutiaes ) :
 	iptable = []
+	distances = [] #list where each entry is a pairwise distance
 	for i in range( len(minutiaes )-1 ) :
 		k = i+1
 		for j in range( k,len(minutiaes) ) :
 			##print minutiaes[i],minutiaes[k]
 			##print '(i,j) : ( %d,%d )'%(i,j)
 			distance = euclidean_distance( minutiaes[i][ 0:2 ],minutiaes[j][ 0:2 ] )
-			##print 'dist is : ',distance
-			if distance > 40 :
+			#print 'dist is : ',distance
+			distances.append( distance )
+			if distance > 100 :
 				continue
 			angle_of_line = calculate_angle( minutiaes[i][ 0:2 ],minutiaes[j][ 0:2 ] )
 
@@ -61,6 +66,11 @@ def build_intra_table( minutiaes ) :
 				iptable.append( ( distance, beta1,beta2,i,j ) )
 			else :
 				iptable.append( ( distance, beta2,beta1,j,i ) )
+
+	distances.sort()
+	print 'the distances in sorted order are : '
+	for entry in distances :
+		print entry
 
 	return iptable
 
@@ -300,6 +310,7 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 		for j in range( len( iptable2 ) ) :
 			if abs( iptable1[ i ][ 0 ]-iptable2[j][0] ) <= threshold_dist and abs( iptable1[i][1] - iptable2[j][1] ) <= threshold_beta1 and abs( iptable1[i][2] - iptable2[j][2] ) <= threshold_beta2 :
 				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4],iptable1[i][0] ) )
+				logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
 				#print 'compatibility_table is : ',compatibility_table
 				if index1.get( iptable1[i][3] ) :
 					index1[ iptable1[i][3] ].append( len( compatibility_table ) - 1 )
@@ -460,4 +471,4 @@ print 'len(mapping) is : %d ',len( mapping )
 print 'len( minutiaes1_in_box is : %d ', len( minutiaes1_in_box )
 print 'len( minutiaes2 ) is : %d ', len( minutiaes2 )
 
-print 'score is : %s',( score, )
+print 'score is : %f'%( score, )
