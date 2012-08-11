@@ -86,8 +86,9 @@ def build_intra_table( minutiaes ) :
 			angle_of_line = calculate_angle( minutiaes[i][ 0:2 ],minutiaes[j][ 0:2 ] )
 
 			
-			beta1 = minutiaes[i][2] - angle_of_line
-			beta2 = minutiaes[j][2] - angle_of_line
+			#the factor*angle follows because of the way ansi or iso stores the minutiaes
+			beta1 = ANSI_FACTOR*minutiaes[i][2] - angle_of_line
+			beta2 = ANSI_FACTOR*minutiaes[j][2] - angle_of_line
 
 			if beta1 < beta2 :
 				iptable.append( ( distance, beta1,beta2,i,j ) )
@@ -328,9 +329,9 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	
 	index1 = {}
 	index2 = {}
-	threshold_dist = 4
-	threshold_beta1 = 5
-	threshold_beta2 = 5 
+	THRESHOLD_DIST = 8.0
+	THRESHOLD_BETA1 = 8.0
+	THRESHOLD_BETA2 = 8.0
 	for i in range( len( iptable1 ) ) :
 		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
 		for j in range( len( iptable2 ) ) :
@@ -338,8 +339,8 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 			beta1_dist = abs( iptable1[i][1] - iptable2[j][1] )
 			beta2_dist = abs( iptable1[i][2] - iptable2[j][2] )
 			#TODO : Find the shortest distance
-			if point_dist <= threshold_dist and  beta1_dist <= threshold_beta1 and beta2_dist  <= threshold_beta2 :
-				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist ) < min_distance_candidate : #since calculate_distance < min_distance_candidate( first 200 ) is being done once it will get into the loop here
+			if point_dist <= THRESHOLD_DIST and  beta1_dist <= THRESHOLD_BETA1 and beta2_dist  <= THRESHOLD_BETA2 :
+				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( THRESHOLD_BETA1/THRESHOLD_DIST ) )**2 + diff_beta1 **2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist ) < min_distance_candidate : #since calculate_distance < min_distance_candidate( first 200 ) is being done once it will get into the loop here
 					#TODO
 					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist )
 					min_index_candidate = j
