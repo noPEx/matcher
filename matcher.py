@@ -24,6 +24,8 @@ import logging
 
 MAXIMUM_PAIRWISE_DISTANCE = 50
 MAXIMUM_EUCLIDEAN_DISTANCE = -1 #the maximum distance that can be possible useful for normalization purpose
+ISO_FACTOR = 1.40625
+ANSI_FACTOR = 2.000
 
 logging.basicConfig( filename='info.log',filemode='w',level=logging.DEBUG,format='%(message)s' )
 
@@ -35,8 +37,16 @@ def conv_to_numbers( minutiaes ) :
 	return numbers
 
 def sort_2d( minutiaes ) :
-	minutiaes.sort( key=lambda x: x[1] )
-	return minutiaes
+	'''
+		First sorts minutiaes by y and then by x and then returns it.
+	'''
+	#minutiaes.sort( key=lambda x: x[1] )
+	#arrange the minutiaes so as to sort them lexicographically as they are represented in x,y format. change to y,x
+	y_x_format_minutiaes = [ [ item[1],item[0],item[2] ] for item in minutiaes ]
+	sorted_minutiaes = sorted( y_x_format_minutiaes  )
+	x_y_format_minutiaes = [ [ item[1],item[0],item[2] ] for item in sorted_minutiaes ]
+
+	return x_y_format_minutiaes
 
 def calculate_angle( minutiaes1,minutiaes2 ) :
 	'''
