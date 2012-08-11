@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-
-
 '''
 	matcher.py
 
@@ -12,10 +10,20 @@
 
 	list2.txt will be from smaller image
 '''
+
+'''
+	My #TODO List
+	#TODO 1 : take the closest pair for inclusion in the compatibility_table
+		determine the pairwise distance to ( dist_coordinate + dist_beta1 + dist_beta2 )/( DIST_MAX+360+360 )
+	#TODO 2 : if conflict arises ignore the longer pair's indications
+'''
 import networkx as nx,sys
 import math
 import copy
 import logging
+
+MAXIMUM_PAIRWISE_DISTANCE = 50
+MAXIMUM_EUCLIDEAN_DISTANCE = -1 #the maximum distance that can be possible useful for normalization purpose
 
 logging.basicConfig( filename='info.log',filemode='w',level=logging.DEBUG,format='%(message)s' )
 
@@ -31,12 +39,20 @@ def sort_2d( minutiaes ) :
 	return minutiaes
 
 def calculate_angle( minutiaes1,minutiaes2 ) :
+	'''
+	This returns an angle between 0 and 180
+	'''
 
-	angle = (180.0/math.pi )*math.atan( ( minutiaes1[1]-minutiaes2[1] )/( minutiaes1[0]-minutiaes2[0]+0.000000001 ) )
+	logging.info(  str(minutiaes1)+ str( minutiaes2  ) )
+
+	angle = - math.degrees( math.atan( ( minutiaes1[1]-minutiaes2[1] )/( minutiaes1[0]-minutiaes2[0]+0.000000001 ) ) )
 
 	if angle < 0 :
+		logging.info( 180+angle )
 		return 180+angle
+	logging.info( angle )
 	return angle
+
 def euclidean_distance( p1,p2 ) :
 	return math.sqrt( (p2[0]-p1[0])**2 + ( p2[1]-p1[1] )**2 )
 
@@ -54,7 +70,7 @@ def build_intra_table( minutiaes ) :
 			distance = euclidean_distance( minutiaes[i][ 0:2 ],minutiaes[j][ 0:2 ] )
 			#print 'dist is : ',distance
 			distances.append( distance )
-			if distance > 100 :
+			if distance > MAXIMUM_PAIRWISE_DISTANCE : #if distance greater than a threshold then put the entry into the table
 				continue
 			angle_of_line = calculate_angle( minutiaes[i][ 0:2 ],minutiaes[j][ 0:2 ] )
 
@@ -68,10 +84,11 @@ def build_intra_table( minutiaes ) :
 				iptable.append( ( distance, beta2,beta1,j,i ) )
 
 	distances.sort()
+	'''
 	print 'the distances in sorted order are : '
 	for entry in distances :
 		print entry
-
+	'''
 	return iptable
 
 
@@ -164,14 +181,14 @@ def remove_value_from_index( removable,i1,i2 ) :
 			i2[ key ].remove( removable )
 
 
-
-
-
 #print sys.argv[1]
 
 f1 = open( sys.argv[1],'r' )
 lines1 = f1.readlines()
+dimensions1 = [ int(item) for item in lines1.pop( 0 ).split()[ 0:2 ] ]
 f1.close()
+
+print 'dimensions1 is : ', dimensions1
 
 #print lines1
 minutiaes1 = [ a.split()[ : 3 ] for a in lines1 ]
@@ -198,7 +215,11 @@ print 'iptable1 is :',iptable1
 
 f2 = open( sys.argv[2],'r' )
 lines2 = f2.readlines()
+dimensions2 = [ int(item) for item in lines2.pop( 0 ).split()[ 0:2 ] ]
 f2.close()
+
+print 'dimensions2 is : ', dimensions2
+
 
 #print lines2
 minutiaes2 = [ a.split()[ : 3 ] for a in lines2 ]
@@ -308,6 +329,7 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	threshold_beta2 = 5 
 	for i in range( len( iptable1 ) ) :
 		for j in range( len( iptable2 ) ) :
+			#TODO : Find the shortest distance
 			if abs( iptable1[ i ][ 0 ]-iptable2[j][0] ) <= threshold_dist and abs( iptable1[i][1] - iptable2[j][1] ) <= threshold_beta1 and abs( iptable1[i][2] - iptable2[j][2] ) <= threshold_beta2 :
 				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4],iptable1[i][0] ) )
 				logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
