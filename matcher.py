@@ -334,39 +334,44 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	for i in range( len( iptable1 ) ) :
 		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
 		for j in range( len( iptable2 ) ) :
+			point_dist = abs( iptable1[ i ][ 0 ]-iptable2[j][0] )
+			beta1_dist = abs( iptable1[i][1] - iptable2[j][1] )
+			beta2_dist = abs( iptable1[i][2] - iptable2[j][2] )
 			#TODO : Find the shortest distance
-			if abs( iptable1[ i ][ 0 ]-iptable2[j][0] ) <= threshold_dist and abs( iptable1[i][1] - iptable2[j][1] ) <= threshold_beta1 and abs( iptable1[i][2] - iptable2[j][2] ) <= threshold_beta2 :
-				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4],iptable1[i][0] ) )
-				'''
-				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  iptable1[ i ][ 0 ]-iptable2[j][0],iptable1[i][1] - iptable2[j][1], iptable1[i][2] - iptable2[j][2] ) < min_distance_candidate < min_distance_candidate :
+			if point_dist <= threshold_dist and  beta1_dist <= threshold_beta1 and beta2_dist  <= threshold_beta2 :
+				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist ) < min_distance_candidate : #since calculate_distance < min_distance_candidate( first 200 ) is being done once it will get into the loop here
 					#TODO
-					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  iptable1[ i ][ 0 ]-iptable2[j][0],iptable1[i][1] - iptable2[j][1], iptable1[i][2] - iptable2[j][2] ) < min_distance_candidate
+					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist )
 					min_index_candidate = j
-				'''
-				logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
-				#print 'compatibility_table is : ',compatibility_table
-				if index1.get( iptable1[i][3] ) :
-					index1[ iptable1[i][3] ].append( len( compatibility_table ) - 1 )
 				else :
-					index1[ iptable1[i][3] ] =  [ len( compatibility_table ) - 1 ] 
+					continue
+
+		if min_index_candidate :
+			compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[min_index_candidate][3],iptable2[min_index_candidate][4],iptable1[i][0] ) )
+			logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
+			#print 'compatibility_table is : ',compatibility_table
+			if index1.get( iptable1[i][3] ) :
+				index1[ iptable1[i][3] ].append( len( compatibility_table ) - 1 )
+			else :
+				index1[ iptable1[i][3] ] =  [ len( compatibility_table ) - 1 ] 
 	
 	
-				if index1.get( iptable1[i][4] ) :
-					index1[ iptable1[i][4] ].append( len( compatibility_table ) - 1 )
-				else :
-					index1[ iptable1[i][4] ] =  [ len( compatibility_table ) - 1 ] 
+			if index1.get( iptable1[i][4] ) :
+				index1[ iptable1[i][4] ].append( len( compatibility_table ) - 1 )
+			else :
+				index1[ iptable1[i][4] ] =  [ len( compatibility_table ) - 1 ] 
 	
 	
-				if index2.get( iptable2[j][3] ) :
-					index2[ iptable2[j][3] ].append( len( compatibility_table ) - 1 )
-				else :
-					index2[ iptable2[j][3] ] =  [ len( compatibility_table ) - 1 ] 
+			if index2.get( iptable2[j][3] ) :
+				index2[ iptable2[j][3] ].append( len( compatibility_table ) - 1 )
+			else :
+				index2[ iptable2[j][3] ] =  [ len( compatibility_table ) - 1 ] 
 	
 	
-				if index2.get( iptable2[j][4] ) :
-					index2[ iptable2[j][4] ].append( len( compatibility_table ) - 1 )
-				else :
-					index2[ iptable2[j][4] ] =  [ len( compatibility_table ) - 1 ] 
+			if index2.get( iptable2[j][4] ) :
+				index2[ iptable2[j][4] ].append( len( compatibility_table ) - 1 )
+			else :
+				index2[ iptable2[j][4] ] =  [ len( compatibility_table ) - 1 ] 
 
 	return compatibility_table,index1,index2
 
