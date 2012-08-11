@@ -16,6 +16,7 @@
 	#TODO 1 : take the closest pair for inclusion in the compatibility_table
 		determine the pairwise distance to ( dist_coordinate + dist_beta1 + dist_beta2 )/( DIST_MAX+360+360 )
 	#TODO 2 : if conflict arises ignore the longer pair's indications
+	#TODO 3 : convert from ansi format angle to normal 0-360 degree and use them to calculate relative angles to the line
 '''
 import networkx as nx,sys
 import math
@@ -149,18 +150,8 @@ def build_spanning_tree( ct ) :
 		else :
 			dict1[ entry[1] ] = dict2[ entry[3] ]  = next( tokens )
 
-		print 'dict1 is : ', dict1
-		print 'dict2 is : ', dict2
-		print 'entry[2] is : ', entry[2]
-		print 'dict2[ entry[2] ] is  : ', dict2[ entry[2] ]
-		print 'dict2[ entry[3] ] is  : ', dict2[ entry[3] ]
 		G1.add_edge( dict1[ entry[0] ],dict1[ entry[1] ],weight=entry[4] )
 		G2.add_edge( dict2[ entry[2] ],dict2[ entry[3] ],weight=entry[4] )
-
-		"""
-		G1.add_edge( entry[0],entry[1],weight=entry[4] )
-		G2.add_edge( entry[2],entry[3],weight=entry[4] )
-		"""
 
 	#print 'G1.edges are : ', G1.edges()
 	#print 'G2.edges are : ', G2.edges()
@@ -329,6 +320,9 @@ def get_disjoint_trees( tree_list ) :
 
 
 def build_ct_and_indexes( iptable1,iptable2 ) :
+	'''
+		builds compatibility_table and indexes and returns them.
+	'''
 
 	compatibility_table = []
 	
@@ -338,10 +332,17 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	threshold_beta1 = 5
 	threshold_beta2 = 5 
 	for i in range( len( iptable1 ) ) :
+		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
 		for j in range( len( iptable2 ) ) :
 			#TODO : Find the shortest distance
 			if abs( iptable1[ i ][ 0 ]-iptable2[j][0] ) <= threshold_dist and abs( iptable1[i][1] - iptable2[j][1] ) <= threshold_beta1 and abs( iptable1[i][2] - iptable2[j][2] ) <= threshold_beta2 :
 				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4],iptable1[i][0] ) )
+				'''
+				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  iptable1[ i ][ 0 ]-iptable2[j][0],iptable1[i][1] - iptable2[j][1], iptable1[i][2] - iptable2[j][2] ) < min_distance_candidate < min_distance_candidate :
+					#TODO
+					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  iptable1[ i ][ 0 ]-iptable2[j][0],iptable1[i][1] - iptable2[j][1], iptable1[i][2] - iptable2[j][2] ) < min_distance_candidate
+					min_index_candidate = j
+				'''
 				logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
 				#print 'compatibility_table is : ',compatibility_table
 				if index1.get( iptable1[i][3] ) :
