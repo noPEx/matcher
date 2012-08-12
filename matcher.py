@@ -23,7 +23,7 @@ import math
 import copy
 import logging
 
-MAXIMUM_PAIRWISE_DISTANCE = 50
+MAXIMUM_PAIRWISE_DISTANCE = 70
 MAXIMUM_EUCLIDEAN_DISTANCE = -1 #the maximum distance that can be possible useful for normalization purpose
 ISO_FACTOR = 1.40625
 ANSI_FACTOR = 2.000
@@ -54,14 +54,14 @@ def calculate_angle( minutiaes1,minutiaes2 ) :
 	This returns an angle between 0 and 180
 	'''
 
-	logging.info(  str(minutiaes1)+ str( minutiaes2  ) )
+	#logging.info(  str(minutiaes1)+ str( minutiaes2  ) )
 
 	angle = - math.degrees( math.atan( ( minutiaes1[1]-minutiaes2[1] )/( minutiaes1[0]-minutiaes2[0]+0.000000001 ) ) )
 
 	if angle < 0 :
-		logging.info( 180+angle )
+		#logging.info( 180+angle )
 		return 180+angle
-	logging.info( angle )
+	#logging.info( angle )
 	return angle
 
 def euclidean_distance( p1,p2 ) :
@@ -201,11 +201,15 @@ minutiaes1 = conv_to_numbers( minutiaes1 )
 #print 'minutiaes1 after conversion are :',minutiaes1
 
 minutiaes1 = sort_2d( minutiaes1 )
+logging.info( 'sorted minutiaes from 1 are :' )
+logging.info( minutiaes1 )
 
 #print 'sorted minutiaes from 1 are :',minutiaes1
 
 iptable1 = build_intra_table( minutiaes1 )
 
+logging.info('iptable1 is : ') 
+logging.info( iptable1 )
 #print 'max distance is :',max( iptable1,key= lambda x : x[0] )
 
 #print 'minutiaes.size is :',len( minutiaes1 )
@@ -233,10 +237,14 @@ minutiaes2 = conv_to_numbers( minutiaes2 )
 
 minutiaes2 = sort_2d( minutiaes2 )
 
+logging.info( 'sorted minutiaes from 2 are :' )
+logging.info( minutiaes2 )
 #print 'sorted minutiaes from 2 are :',minutiaes2
 
 iptable2 = build_intra_table( minutiaes2 )
 
+logging.info('iptable2 is : ') 
+logging.info( iptable2 )
 #print 'max distance is :',max( iptable2,key= lambda x : x[0] )
 
 #print 'minutiaes.size is :',len( minutiaes2 )
@@ -329,17 +337,21 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	
 	index1 = {}
 	index2 = {}
-	THRESHOLD_DIST = 6.0
-	THRESHOLD_BETA1 = 16.0
-	THRESHOLD_BETA2 = 16.0
+	THRESHOLD_DIST = 5.0
+	THRESHOLD_BETA1 = 10.0
+	THRESHOLD_BETA2 = 10.0
 	for i in range( len( iptable1 ) ) :
 		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
+		num_candidates = 0
 		for j in range( len( iptable2 ) ) :
 			point_dist = abs( iptable1[ i ][ 0 ]-iptable2[j][0] )
 			beta1_dist = abs( iptable1[i][1] - iptable2[j][1] )
 			beta2_dist = abs( iptable1[i][2] - iptable2[j][2] )
 			#TODO : Find the shortest distance
 			if point_dist <= THRESHOLD_DIST and  beta1_dist <= THRESHOLD_BETA1 and beta2_dist  <= THRESHOLD_BETA2 :
+				num_candidates += 1 #one more corresponding pair found
+				if num_candidates >= 2 : #if more than 1 corresponding pair is found then reject this pair
+					break
 				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( THRESHOLD_BETA1/THRESHOLD_DIST ) )**2 + diff_beta1 **2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist ) < min_distance_candidate : #since calculate_distance < min_distance_candidate( first 200 ) is being done once it will get into the loop here
 					#TODO
 					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist )
@@ -348,7 +360,19 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 					continue
 
 		if min_index_candidate :
-			compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[min_index_candidate][3],iptable2[min_index_candidate][4],iptable1[i][0] ) )
+			if ( ( iptable1[i][3]-iptable2[min_index_candidate][3] ) * ( iptable1[i][4] - iptable2[min_index_candidate][4] ) ) < 0 : # if there is a problem on the lexicography, then consider this
+				'''
+				print 'min_index_candidate is : ',min_index_candidate
+				print 'iptable2[ %d ] is : %s'%( min_index_candidate,iptable2[  min_index_candidate ] )
+				print minutiaes1[ iptable1[i][3] ][1]
+				#print 'iptable1[ %d ] is : %s'%( i,iptable1[i] )
+				#print '#difference is : ',minutiaes1[ iptable1[i][3] ][1] - minutiaes1[ iptable2[i][4] ][1] 
+				'''
+				if abs( minutiaes1[ iptable1[i][3] ][1] - minutiaes1[ iptable1[i][4] ][1] ) > 25 or abs( minutiaes2[ iptable2[min_index_candidate][3] ][1] - minutiaes2[ iptable2[min_index_candidate][4] ][1] ) > 25 :
+					continue
+					pass #do not enter anything
+			else :
+				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[min_index_candidate][3],iptable2[min_index_candidate][4],iptable1[i][0] ) )
 			logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
 			#print 'compatibility_table is : ',compatibility_table
 			if index1.get( iptable1[i][3] ) :
@@ -373,6 +397,9 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 				index2[ iptable2[j][4] ].append( len( compatibility_table ) - 1 )
 			else :
 				index2[ iptable2[j][4] ] =  [ len( compatibility_table ) - 1 ] 
+
+	logging.info('compatibility table is : ' )
+	logging.info( compatibility_table )
 
 	return compatibility_table,index1,index2
 
