@@ -329,9 +329,9 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	
 	index1 = {}
 	index2 = {}
-	THRESHOLD_DIST = 8.0
-	THRESHOLD_BETA1 = 8.0
-	THRESHOLD_BETA2 = 8.0
+	THRESHOLD_DIST = 6.0
+	THRESHOLD_BETA1 = 16.0
+	THRESHOLD_BETA2 = 16.0
 	for i in range( len( iptable1 ) ) :
 		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
 		for j in range( len( iptable2 ) ) :
@@ -403,6 +403,8 @@ def get_mapping( compatibility_table ) :
 		if mapping.get( entry[2] ) :
 			if mapping[ entry[2] ] != entry[0] :
 				print 'gadbad hai bhai'
+				print 'the entry is : ',( mapping[ entry[2] ],entry[0] )
+				print 'the new should be : ',( entry[2],entry[0] )
 			pass
 		else :
 			mapping[ entry[2] ]  = entry[0]
@@ -410,6 +412,8 @@ def get_mapping( compatibility_table ) :
 		if mapping.get( entry[3] ) :
 			if mapping[ entry[3] ] != entry[1] :
 				print 'bahut gadbad hai bhai'
+				print 'the entry is : ',( mapping[ entry[3] ],entry[1] )
+				print 'the new should be : ',( entry[3],entry[1] )
 			pass
 		else :
 			mapping[ entry[3] ] = entry[1]
