@@ -215,7 +215,7 @@ logging.info( iptable1 )
 #print 'minutiaes.size is :',len( minutiaes1 )
 #print 'iptable.size is :', len( iptable1 )
 
-print 'iptable1 is :',iptable1
+#print 'iptable1 is :',iptable1
 
 
 
@@ -250,7 +250,7 @@ logging.info( iptable2 )
 #print 'minutiaes.size is :',len( minutiaes2 )
 #print 'iptable.size is :', len( iptable2 )
 
-print 'iptable2 is :',iptable2
+#print 'iptable2 is :',iptable2
 
 
 
@@ -335,73 +335,66 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 
 	compatibility_table = []
 	
-	index1 = {}
-	index2 = {}
-	THRESHOLD_DIST = 5.0
+	mapping1 = {}
+	mapping2 = {}
+	THRESHOLD_DIST = 7.0
 	THRESHOLD_BETA1 = 10.0
 	THRESHOLD_BETA2 = 10.0
 	for i in range( len( iptable1 ) ) :
-		min_index_candidate,min_distance_candidate = None,200 #minimum euclidean distance we find till now
-		num_candidates = 0
 		for j in range( len( iptable2 ) ) :
 			point_dist = abs( iptable1[ i ][ 0 ]-iptable2[j][0] )
 			beta1_dist = abs( iptable1[i][1] - iptable2[j][1] )
 			beta2_dist = abs( iptable1[i][2] - iptable2[j][2] )
 			#TODO : Find the shortest distance
 			if point_dist <= THRESHOLD_DIST and  beta1_dist <= THRESHOLD_BETA1 and beta2_dist  <= THRESHOLD_BETA2 :
-				num_candidates += 1 #one more corresponding pair found
-				if num_candidates >= 2 : #if more than 1 corresponding pair is found then reject this pair
-					break
-				if ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( THRESHOLD_BETA1/THRESHOLD_DIST ) )**2 + diff_beta1 **2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist ) < min_distance_candidate : #since calculate_distance < min_distance_candidate( first 200 ) is being done once it will get into the loop here
-					#TODO
-					min_distance_candidate = ( lambda diff_dist,diff_beta1,diff_beta2 : math.sqrt( ( diff_dist*( 508.0/100.0 ) )**2 + diff_beta1**2 + diff_beta2**2 ) )(  point_dist, beta1_dist, beta2_dist )
-					min_index_candidate = j
+				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4],iptable1[i][0] ) )
+				logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
+				#print 'compatibility_table is : ',compatibility_table
+
+				#keep track how many elements are mapped from one to another
+
+				#From 1 to 2 mapping
+				if mapping1.get( iptable1[i][3] ) :
+					if mapping1[ iptable1[i][3] ].get( iptable2[j][3] ) :
+						mapping1[ iptable1[i][3] ][ iptable2[j][3] ] += 1
+					else :
+						mapping1[ iptable1[i][3] ][ iptable2[j][3] ] = 1
 				else :
-					continue
+					mapping1[ iptable1[i][3] ] = { iptable2[j][3] : 1 }
 
-		if min_index_candidate :
-			if ( ( iptable1[i][3]-iptable2[min_index_candidate][3] ) * ( iptable1[i][4] - iptable2[min_index_candidate][4] ) ) < 0 : # if there is a problem on the lexicography, then consider this
-				'''
-				print 'min_index_candidate is : ',min_index_candidate
-				print 'iptable2[ %d ] is : %s'%( min_index_candidate,iptable2[  min_index_candidate ] )
-				print minutiaes1[ iptable1[i][3] ][1]
-				#print 'iptable1[ %d ] is : %s'%( i,iptable1[i] )
-				#print '#difference is : ',minutiaes1[ iptable1[i][3] ][1] - minutiaes1[ iptable2[i][4] ][1] 
-				'''
-				if abs( minutiaes1[ iptable1[i][3] ][1] - minutiaes1[ iptable1[i][4] ][1] ) > 25 or abs( minutiaes2[ iptable2[min_index_candidate][3] ][1] - minutiaes2[ iptable2[min_index_candidate][4] ][1] ) > 25 :
-					continue
-					pass #do not enter anything
-			else :
-				compatibility_table.append( ( iptable1[i][3],iptable1[i][4],iptable2[min_index_candidate][3],iptable2[min_index_candidate][4],iptable1[i][0] ) )
-			logging.info( ( iptable1[i][3],iptable1[i][4],iptable2[j][3],iptable2[j][4] ) )
-			#print 'compatibility_table is : ',compatibility_table
-			if index1.get( iptable1[i][3] ) :
-				index1[ iptable1[i][3] ].append( len( compatibility_table ) - 1 )
-			else :
-				index1[ iptable1[i][3] ] =  [ len( compatibility_table ) - 1 ] 
-	
-	
-			if index1.get( iptable1[i][4] ) :
-				index1[ iptable1[i][4] ].append( len( compatibility_table ) - 1 )
-			else :
-				index1[ iptable1[i][4] ] =  [ len( compatibility_table ) - 1 ] 
-	
-	
-			if index2.get( iptable2[j][3] ) :
-				index2[ iptable2[j][3] ].append( len( compatibility_table ) - 1 )
-			else :
-				index2[ iptable2[j][3] ] =  [ len( compatibility_table ) - 1 ] 
-	
-	
-			if index2.get( iptable2[j][4] ) :
-				index2[ iptable2[j][4] ].append( len( compatibility_table ) - 1 )
-			else :
-				index2[ iptable2[j][4] ] =  [ len( compatibility_table ) - 1 ] 
 
+				if mapping1.get( iptable1[i][4] ) :
+					if mapping1[ iptable1[i][4] ].get( iptable2[j][4] ) :
+						mapping1[ iptable1[i][4] ][ iptable2[j][4] ] += 1
+					else :
+						mapping1[ iptable1[i][4] ][ iptable2[j][4] ] = 1
+				else :
+					mapping1[ iptable1[i][4] ] = { iptable2[j][4] : 1 }
+
+
+				#From 2 to 1 mapping
+
+				if mapping2.get( iptable2[j][3] ) :
+					if mapping2[ iptable2[j][3] ].get( iptable1[i][3] ) :
+						mapping2[ iptable2[j][3] ][ iptable1[i][3] ] += 1
+					else :
+						mapping2[ iptable2[j][3] ][ iptable1[i][3] ] = 1
+				else :
+					mapping2[ iptable2[j][3] ] = { iptable1[i][3] : 1 }
+
+				if mapping2.get( iptable2[j][4] ) :
+					if mapping2[ iptable2[j][4] ].get( iptable1[i][4] ) :
+						mapping2[ iptable2[j][4] ][ iptable1[i][4] ] += 1
+					else :
+						mapping2[ iptable2[j][4] ][ iptable1[i][4] ] = 1
+				else :
+					mapping2[ iptable2[j][4] ] = { iptable1[i][4] : 1 }
+
+	
 	logging.info('compatibility table is : ' )
 	logging.info( compatibility_table )
 
-	return compatibility_table,index1,index2
+	return compatibility_table,mapping1,mapping2
 
 
 def get_boundaries( minutiaes_in_box,minutiaes ) :
@@ -413,9 +406,72 @@ def get_boundaries( minutiaes_in_box,minutiaes ) :
 
 	return ( minutiaes.index( min( minutiaes_in_box, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes_in_box, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes_in_box, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes_in_box, key=lambda x : x[1] ) ) )
 
-compatibility_table,index1,index2 = build_ct_and_indexes( iptable1,iptable2 )
+compatibility_table,mapping1,mapping2 = build_ct_and_indexes( iptable1,iptable2 )
 
+
+def map_reduce( table ) :
+	'''
+		table is the original compatibility table. Do reduction in it to reduce conflicts :D
+		Approach first make edges, add to G1 , then sort according to weight. Start removing edges
+		create another tree. Then remaining edges in G, delete the entries corresponding to them. 
+	'''
+	index1 = {} #keeps track of the minutiaes from minutiaes1
+
+	G = nx.DiGraph()
+	G_out = nx.DiGraph()
+	for i,entry in enumerate(table) :
+		
+		if  ( entry[0],entry[2] ) in G.edges() : #update weight by 1
+			G.add_edge( entry[0],entry[2],weight=G.get_edge_data( entry[0],entry[2] )['weight']+1 )
+			
+			if index1.get( entry[0] ) :
+				index1[ entry[0] ] = i
+
+		else :
+			G.add_edge( entry[0],entry[2],weight=1 )
+			if index1.get( entry[0] ) :
+				index1[ entry[0] ] = i
+
+		if  ( entry[1],entry[3] ) in G.edges() : #update weight by 1
+			G.add_edge( entry[1],entry[3],weight=G.get_edge_data( entry[1],entry[3] )['weight']+1 )
+			if index1.get( entry[1] ) :
+				index1[ entry[1] ] = i
+		else :
+			G.add_edge( entry[1],entry[3],weight=1 )
+			if index1.get( entry[1] ) :
+				index1[ entry[1] ] = i
+
+	
+	print '\n\n\n\n\n\n\n'
+	print G.edge
+
+
+	#Get an iterator over the edges and add the suitable ones to G_out
+	edge_data = list( G.edges_iter( data=True ) )
+	edge_data.sort( key=lambda x : x[2]['weight'],reverse=True )
+
+	print '\n\n\n\n\n\nedge_data'
+	print edge_data
+
+	for edge in edge_data :
+		if G_out.has_node( edge[0] ) or G_out.has_node( edge[1] ) :
+			pass
+		else :
+			G_out.add_edge( *edge )
+			G.remove_edge( *edge[0:2] )
+		
+	print '\n\n\n\n\n'
+	print G_out.edge
+
+	print '\n\n\n\n\n'
+	print G.edge
+print 'mapping1 is : ', mapping1
+print 'mapping2 is : ', mapping2
 print 'compatibility_table is : ',compatibility_table
+
+map_reduce( compatibility_table )
+
+exit( )
 
 #Find the mapping from 1 to 2. 1 is the first argument
 
