@@ -184,76 +184,6 @@ def remove_value_from_index( removable,i1,i2 ) :
 			i2[ key ].remove( removable )
 
 
-#print sys.argv[1]
-
-f1 = open( sys.argv[1],'r' )
-lines1 = f1.readlines()
-dimensions1 = [ int(item) for item in lines1.pop( 0 ).split()[ 0:2 ] ]
-f1.close()
-
-print 'dimensions1 is : ', dimensions1
-
-#print lines1
-minutiaes1 = [ a.split()[ : 3 ] for a in lines1 ]
-##print 'minutiaes are'
-##print minutiaes
-
-minutiaes1 = conv_to_numbers( minutiaes1 )
-#print 'minutiaes1 after conversion are :',minutiaes1
-
-minutiaes1 = sort_2d( minutiaes1 )
-logging.info( 'sorted minutiaes from 1 are :' )
-logging.info( minutiaes1 )
-
-#print 'sorted minutiaes from 1 are :',minutiaes1
-
-iptable1 = build_intra_table( minutiaes1 )
-
-logging.info('iptable1 is : ') 
-logging.info( iptable1 )
-#print 'max distance is :',max( iptable1,key= lambda x : x[0] )
-
-#print 'minutiaes.size is :',len( minutiaes1 )
-#print 'iptable.size is :', len( iptable1 )
-
-#print 'iptable1 is :',iptable1
-
-
-
-f2 = open( sys.argv[2],'r' )
-lines2 = f2.readlines()
-dimensions2 = [ int(item) for item in lines2.pop( 0 ).split()[ 0:2 ] ]
-f2.close()
-
-print 'dimensions2 is : ', dimensions2
-
-
-#print lines2
-minutiaes2 = [ a.split()[ : 3 ] for a in lines2 ]
-##print 'minutiaes are'
-##print minutiaes
-
-minutiaes2 = conv_to_numbers( minutiaes2 )
-##print 'minutiaes are :',minutiaes
-
-minutiaes2 = sort_2d( minutiaes2 )
-
-logging.info( 'sorted minutiaes from 2 are :' )
-logging.info( minutiaes2 )
-#print 'sorted minutiaes from 2 are :',minutiaes2
-
-iptable2 = build_intra_table( minutiaes2 )
-
-logging.info('iptable2 is : ') 
-logging.info( iptable2 )
-#print 'max distance is :',max( iptable2,key= lambda x : x[0] )
-
-#print 'minutiaes.size is :',len( minutiaes2 )
-#print 'iptable.size is :', len( iptable2 )
-
-#print 'iptable2 is :',iptable2
-
-
 
 def get_disjoint_trees_dynamic( tree_list ) :
 	'''Now get all the disjoint trees using dynamic programming
@@ -324,8 +254,6 @@ def get_disjoint_trees( tree_list ) :
 			disjoint_trees.append( tree )
 
 	return disjoint_trees
-
-
 
 
 
@@ -407,7 +335,6 @@ def get_boundaries( minutiaes_in_box,minutiaes ) :
 
 	return ( minutiaes.index( min( minutiaes_in_box, key= lambda x : x[0] ) ) , minutiaes.index( min( minutiaes_in_box, key = lambda x : x[1] ) ), minutiaes.index( max( minutiaes_in_box, key = lambda x : x[0] ) ), minutiaes.index( max( minutiaes_in_box, key=lambda x : x[1] ) ) )
 
-compatibility_table,mapping1,mapping2 = build_ct_and_indexes( iptable1,iptable2 )
 
 
 def map_reduce( table ) :
@@ -497,13 +424,8 @@ def map_reduce( table ) :
 
 	return table
 
-print 'mapping1 is : ', mapping1
-print 'mapping2 is : ', mapping2
-print 'compatibility_table is : ',compatibility_table
 
-reduced_compatibility_table = map_reduce( compatibility_table )
 
-#exit( )
 
 
 #Find the mapping from 1 to 2. 1 is the first argument
@@ -535,52 +457,6 @@ def get_mapping( compatibility_table ) :
 			mapping[ entry[3] ] = entry[1]
 	
 	return mapping
-mapping = get_mapping( reduced_compatibility_table ) #mapping is map from minutiaes in 2 to minutiaes in 1
-print 'mapping is : ', mapping
-dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( reduced_compatibility_table )
-
-
-print 'Spanning forest 1 is : ', Spanning_forest_1.edges()
-print 'Spanning forest 2 is : ', Spanning_forest_2.edges()
-
-print 'Spanning forest 1 has  %d components  '%( nx.number_connected_components( Spanning_forest_1 ), )
-print 'Spanning forest 2 has  %d components  '%( nx.number_connected_components( Spanning_forest_2 ), )
-
-print 'dict1 is : ', dict1
-print 'dict2 is : ', dict2
-
-
-print '\n\n\n\n\n\n\n\n\n\n\n\n\ndict1 details '
-for key in dict1 :
-	print ( dict1[ key ], key,minutiaes1[ key ]  )
-
-
-
-print 'dict2 details '
-for key in dict2 :
-	print ( dict2[ key ], key,minutiaes2[ key ]  )
-
-
-#minutiaes1 in box
-minutiaes2_in_box = [ minutiaes2[ item ] for item in mapping.keys() ]
-print 'mapping.keys() are : ', mapping.keys()
-
-
-print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-print 'minutiaes2_in_box is : ', minutiaes2_in_box
-
-print '\n\n\n\n\n\n'
-print 'minutiaes2 is : ', minutiaes2
-
-print '\n\n\n\n\n\n'
-( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box,minutiaes2 )
-boundaries = ( x_left,y_top,x_right,y_bottom )
-
-print  'The boundaries are :' ,( x_left, y_top, x_right, y_bottom )
-
-
-
-print 'mapping is : ', mapping
 #Now make a boundary and search for the minutiaes inside from dict1
 def get_convex_hull( boundaries,mapping ) :
 	#the limits are 260x300 so 259x299
@@ -606,9 +482,6 @@ def get_convex_hull( boundaries,mapping ) :
 		bottom_y_of_hull = minutiaes1[ mapping[ boundaries[ 0 ] ] ][1] +  299 - minutiaes2[ boundaries[0] ][1]
 	return ( left_x_of_hull, top_y_of_hull, right_x_of_hull, bottom_y_of_hull )
 
-convex_points = get_convex_hull( boundaries,mapping )
-
-print 'convex_points is : ',convex_points
 	
 def get_inside_the_boundary( points,minutiaes ) :
 	"""
@@ -624,13 +497,88 @@ def get_inside_the_boundary( points,minutiaes ) :
 
 	
 	return bounded_minutiaes
-#Now count the minutiaes from minutiae1 which fall under the box
-minutiaes1_in_box = get_inside_the_boundary( convex_points,minutiaes2 )
 
-score = ( len(  mapping )**2*1.0 )/( len( minutiaes1_in_box )*len( minutiaes2 ) ) 
+def fetch_minutiaes_list( fileName1, fileName2 ) :
+	"""
+		Given two ANSI format minutiae files, make two list minutiaes1 and minutiaes2
+		such that minutiaes1 has the minutiaes from the larger image
+	"""
 
-print 'len(mapping) is : %d ',len( mapping )
-print 'len( minutiaes1_in_box is : %d ', len( minutiaes1_in_box )
-print 'len( minutiaes2 ) is : %d ', len( minutiaes2 )
+	minutiaes1 = []
+	minutiaes2 = []
 
-print 'score is : %f'%( score, )
+	f1,f2 = open( fileName1,'r' ),open( fileName2,'r' )
+	lines1,lines2 = f1.readlines(),f2.readlines()
+	dimensions1 = [ int(item) for item in lines1.pop( 0 ).split()[ 0:2 ] ] #the first line is the dimension
+	dimensions2 = [ int(item) for item in lines2.pop( 0 ).split()[ 0:2 ] ]
+
+
+	list1 = [ a.split()[ :3 ] for a in lines1 ]
+	list2 = [ a.split()[ :3 ] for a in lines2 ]
+
+	minutiaes_in_list1 = conv_to_numbers( list1 )
+	minutiaes_in_list1 = sort_2d( minutiaes_in_list1 )
+
+	minutiaes_in_list2 = conv_to_numbers( list2 )
+	minutiaes_in_list2 = sort_2d( minutiaes_in_list2 )
+
+	if dimensions1 > dimensions2 :
+		minutiaes1,minutiaes2 = minutiaes_in_list1,minutiaes_in_list2
+	else :
+		minutiaes2,minutiaes1 = minutiaes_in_list1,minutiaes_in_list2
+
+	return minutiaes1,minutiaes2
+	
+if __name__ == "__main__" :
+	if len( sys.argv ) < 3 :
+		print 'You are doing it wrong!\nThe currect usage is : python matcher.py list1.txt list2.txt'
+		exit()
+	
+
+	minutiaes1,minutiaes2 = fetch_minutiaes_list( sys.argv[1],sys.argv[2] )
+	
+	iptable1 = build_intra_table( minutiaes1 )
+	iptable2 = build_intra_table( minutiaes2 )
+	
+
+	compatibility_table,mapping1,mapping2 = build_ct_and_indexes( iptable1,iptable2 )
+	reduced_compatibility_table = map_reduce( compatibility_table ) #resolve conflicts that arises from build_ct_and_indexes
+	mapping = get_mapping( reduced_compatibility_table ) #mapping is map from minutiaes in 2 to minutiaes in 1
+
+	print 'mapping is : ', mapping
+
+	dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( reduced_compatibility_table )
+	
+	
+	minutiaes2_in_box = [ minutiaes2[ item ] for item in mapping.keys() ]
+	
+	
+	'''
+	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+	print 'minutiaes2_in_box is : ', minutiaes2_in_box
+	
+	print '\n\n\n\n\n\n'
+	print 'minutiaes2 is : ', minutiaes2
+	
+	print '\n\n\n\n\n\n'
+	'''
+	( x_left, y_top, x_right, y_bottom ) = get_boundaries( minutiaes2_in_box,minutiaes2 )
+	boundaries = ( x_left,y_top,x_right,y_bottom )
+	
+	convex_points = get_convex_hull( boundaries,mapping )
+	print 'convex_points is : ',convex_points
+
+	print  'The boundaries are :' ,( x_left, y_top, x_right, y_bottom )
+	
+	#Now count the minutiaes from minutiae1 which fall under the box
+	minutiaes1_in_box = get_inside_the_boundary( convex_points,minutiaes2 )
+	
+	score = ( len(  mapping )**2*1.0 )/( len( minutiaes1_in_box )*len( minutiaes2 ) ) 
+	
+	print 'len(mapping) is : %d ',len( mapping )
+	print 'len( minutiaes1_in_box is : %d ', len( minutiaes1_in_box )
+	print 'len( minutiaes2 ) is : %d ', len( minutiaes2 )
+	
+	print 'score is : %f'%( score, )
+	
+	
