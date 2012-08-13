@@ -12,11 +12,12 @@
 '''
 
 '''
-	My #TODO List
-	#TODO 1 : take the closest pair for inclusion in the compatibility_table
-		determine the pairwise distance to ( dist_coordinate + dist_beta1 + dist_beta2 )/( DIST_MAX+360+360 )
-	#TODO 2 : if conflict arises ignore the longer pair's indications
-	#TODO 3 : convert from ansi format angle to normal 0-360 degree and use them to calculate relative angles to the line
+	#PARAMETERS to be changed
+		MAXIMUM_PAIRWISE_DISTANCE
+		THRESHOLD_DIST
+		THRESHOLD_BETA1
+		THRESHOLD_BETA2
+
 '''
 import networkx as nx,sys
 import math
@@ -337,9 +338,9 @@ def build_ct_and_indexes( iptable1,iptable2 ) :
 	
 	mapping1 = {}
 	mapping2 = {}
-	THRESHOLD_DIST = 7.0
-	THRESHOLD_BETA1 = 10.0
-	THRESHOLD_BETA2 = 10.0
+	THRESHOLD_DIST = 8.0
+	THRESHOLD_BETA1 = 20.0
+	THRESHOLD_BETA2 = 20.0
 	for i in range( len( iptable1 ) ) :
 		for j in range( len( iptable2 ) ) :
 			point_dist = abs( iptable1[ i ][ 0 ]-iptable2[j][0] )
@@ -534,13 +535,16 @@ def get_mapping( compatibility_table ) :
 			mapping[ entry[3] ] = entry[1]
 	
 	return mapping
-mapping = get_mapping( reduced_compatibility_table )
+mapping = get_mapping( reduced_compatibility_table ) #mapping is map from minutiaes in 2 to minutiaes in 1
 print 'mapping is : ', mapping
 dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( reduced_compatibility_table )
 
 
 print 'Spanning forest 1 is : ', Spanning_forest_1.edges()
 print 'Spanning forest 2 is : ', Spanning_forest_2.edges()
+
+print 'Spanning forest 1 has  %d components  '%( nx.number_connected_components( Spanning_forest_1 ), )
+print 'Spanning forest 2 has  %d components  '%( nx.number_connected_components( Spanning_forest_2 ), )
 
 print 'dict1 is : ', dict1
 print 'dict2 is : ', dict2
