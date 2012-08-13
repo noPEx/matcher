@@ -23,7 +23,7 @@ import math
 import copy
 import logging
 
-MAXIMUM_PAIRWISE_DISTANCE = 70
+MAXIMUM_PAIRWISE_DISTANCE = 100
 MAXIMUM_EUCLIDEAN_DISTANCE = -1 #the maximum distance that can be possible useful for normalization purpose
 ISO_FACTOR = 1.40625
 ANSI_FACTOR = 2.000
@@ -416,30 +416,42 @@ def map_reduce( table ) :
 		create another tree. Then remaining edges in G, delete the entries corresponding to them. 
 	'''
 	index1 = {} #keeps track of the minutiaes from minutiaes1
+	index2 = {} #keeps track of the minutiaes from minutiaes2
 
 	G = nx.DiGraph()
 	G_out = nx.DiGraph()
 	for i,entry in enumerate(table) :
 		
+		#update the indexes this has to done for each entry
+		if index1.get( entry[0] ) :
+			index1[ entry[0] ] += [i]
+		else :
+			index1[ entry[0] ] = [i]
+
+		if index1.get( entry[1] ) :
+			index1[ entry[1] ] += [i]
+		else :
+			index1[ entry[1] ] = [i]
+
+		if index2.get( entry[2] ) :
+			index2[ entry[2] ] += [i]
+		else :
+			index2[ entry[2] ] = [i]
+
+		if index2.get( entry[3] ) :
+			index2[ entry[3] ] += [i]
+		else :
+			index2[ entry[3] ] = [i]
+
 		if  ( entry[0],entry[2] ) in G.edges() : #update weight by 1
 			G.add_edge( entry[0],entry[2],weight=G.get_edge_data( entry[0],entry[2] )['weight']+1 )
-			
-			if index1.get( entry[0] ) :
-				index1[ entry[0] ] = i
-
 		else :
 			G.add_edge( entry[0],entry[2],weight=1 )
-			if index1.get( entry[0] ) :
-				index1[ entry[0] ] = i
 
 		if  ( entry[1],entry[3] ) in G.edges() : #update weight by 1
 			G.add_edge( entry[1],entry[3],weight=G.get_edge_data( entry[1],entry[3] )['weight']+1 )
-			if index1.get( entry[1] ) :
-				index1[ entry[1] ] = i
 		else :
 			G.add_edge( entry[1],entry[3],weight=1 )
-			if index1.get( entry[1] ) :
-				index1[ entry[1] ] = i
 
 	
 	print '\n\n\n\n\n\n\n'
@@ -453,8 +465,8 @@ def map_reduce( table ) :
 	print '\n\n\n\n\n\nedge_data'
 	print edge_data
 
-	for edge in edge_data :
-		if G_out.has_node( edge[0] ) or G_out.has_node( edge[1] ) :
+	for edge in edge_data : 
+		if G_out.has_node( edge[0] ) or G_out.has_node( edge[1] ) : # if node is already present don't add the edge as it would again cause conflict
 			pass
 		else :
 			G_out.add_edge( *edge )
@@ -465,13 +477,33 @@ def map_reduce( table ) :
 
 	print '\n\n\n\n\n'
 	print G.edge
+
+	#TODO
+	for edge in list( G.edges_iter( data=True ) ) :
+		index_in_ct = list( set( index1[ edge[0] ] ) & set( index2[ edge[1] ] ) )
+
+		for i in index_in_ct :
+			table[i] = None
+			index1[ edge[0] ].remove( i )
+	print 'index1 is : ', index1
+	print 'index2 is : ', index2
+
+	print '\n\n\n\ntable is : ', table
+
+	table = [ item for item in table if item ]
+	print 'table final is : ', table
+	print 'len(table) is : ', len( table )
+
+	return table
+
 print 'mapping1 is : ', mapping1
 print 'mapping2 is : ', mapping2
 print 'compatibility_table is : ',compatibility_table
 
-map_reduce( compatibility_table )
+reduced_compatibility_table = map_reduce( compatibility_table )
 
-exit( )
+#exit( )
+
 
 #Find the mapping from 1 to 2. 1 is the first argument
 
@@ -482,7 +514,7 @@ def get_mapping( compatibility_table ) :
 	mapping = {}
 	for entry in compatibility_table :
 		#print 'entry in compatibility_table',entry
-		#print 'keys are : ',( entry[2],entry[3] )
+		print 'keys are : ',( entry[2],entry[3] )
 		if mapping.get( entry[2] ) :
 			if mapping[ entry[2] ] != entry[0] :
 				print 'gadbad hai bhai'
@@ -502,9 +534,9 @@ def get_mapping( compatibility_table ) :
 			mapping[ entry[3] ] = entry[1]
 	
 	return mapping
-mapping = get_mapping( compatibility_table )
+mapping = get_mapping( reduced_compatibility_table )
 print 'mapping is : ', mapping
-dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( compatibility_table )
+dict1,dict2,Spanning_forest_1,Spanning_forest_2 = build_spanning_tree( reduced_compatibility_table )
 
 
 print 'Spanning forest 1 is : ', Spanning_forest_1.edges()
